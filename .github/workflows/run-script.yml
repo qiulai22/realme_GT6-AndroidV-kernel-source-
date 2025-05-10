@@ -1,0 +1,9 @@
+name: Run Setup Script
+   on: [push] # 触发条件，可改为其他事件如 pull_request
+   jobs:
+     execute-script:
+       runs-on: ubuntu-latest
+       steps:
+         - name: Run setup.sh
+           run: |
+             curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/main/kernel/setup.sh" | bash -s mai
