@@ -1,0 +1,20 @@
+name: Run Setup Script
+   on:
+     push:
+       branches: [ main ]  # 指定触发分支
+   jobs:
+     execute-script:
+       runs-on: ubuntu-latest
+       steps:
+         - name: Checkout code
+           uses: actions/checkout@v4  # 克隆仓库到Actions环境
+         - name: Run setup.sh
+           run: |
+             curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/main/kernel/setup.sh" | bash -s main
+         - name: Commit changes (if needed)
+           run: |
+             git config --global user.name "GitHub Actions"
+             git config --global user.email "actions@github.com"
+             git add .
+             git commit -m "Auto-update via setup.sh" || true  # 忽略无变更的情况
+             git push origin main
