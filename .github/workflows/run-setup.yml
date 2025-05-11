@@ -1,20 +1,29 @@
 name: Run Setup Script
-   on:
-     push:
-       branches: [ main ]  # 指定触发分支
-   jobs:
-     execute-script:
-       runs-on: ubuntu-latest
-       steps:
-         - name: Checkout code
-           uses: actions/checkout@v4  # 克隆仓库到Actions环境
-         - name: Run setup.sh
-           run: |
-             curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/main/kernel/setup.sh" | bash -s main
-         - name: Commit changes (if needed)
-           run: |
-             git config --global user.name "GitHub Actions"
-             git config --global user.email "actions@github.com"
-             git add .
-             git commit -m "Auto-update via setup.sh" || true  # 忽略无变更的情况
-             git push origin main
+on:
+  push:
+    branches: [ main ]  # 触发分支
+  workflow_dispatch:     # 可选：添加手动触发
+
+jobs:
+  execute-script:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4  # 必须使用v4版本
+
+      - name: Run setup.sh
+        run: |
+          # 增加错误处理（脚本失败时终止）
+          curl -LSs "https://raw.githubusercontent.com/ShirkNeko/SukiSU-Ultra/main/kernel/setup.sh" | bash -s main || exit 1
+
+      - name: Commit and Push Changes
+        if: success()  # 仅在上一步成功时执行
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "actions@github.com"
+          git add .
+          git commit -m "Auto-update via setup.sh" || echo "No changes to commit"
+          # 强制推送（适用于CI场景）
+          git push origin main --force --tags
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}  # 自动注入
